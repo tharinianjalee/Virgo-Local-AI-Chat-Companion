@@ -1,0 +1,140 @@
+# =========================
+
+# Python
+
+# =========================
+
+**pycache**/
+*.py[cod]
+*$py.class
+*.so
+
+# Python virtual environments
+
+.venv/
+venv/
+env/
+ENV/
+
+# Packaging / distribution
+
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Testing / coverage
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.pyre/
+.ruff_cache/
+
+# =========================
+
+# Environment & secrets
+
+# =========================
+
+.env
+.env.*
+!.env.example
+
+# =========================
+
+# Jupyter
+
+# =========================
+
+.ipynb_checkpoints/
+
+# =========================
+
+# AI / ML artifacts
+
+# =========================
+
+# Trained models / checkpoints
+
+models/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.keras
+
+# Experiment tracking
+
+wandb/
+mlruns/
+runs/
+
+# =========================
+
+# Datasets
+
+# =========================
+
+data/
+datasets/
+chroma_db/
+
+# Large generated outputs
+
+outputs/
+artifacts/
+logs/
+
+# =========================
+
+# IDE / editors
+
+# =========================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+
+# OS files
+
+# =========================
+
+.DS_Store
+Thumbs.db
+
+# =========================
+
+# Local configuration
+
+# =========================
+
+*.local
+config.local.*
+
+# =========================
+
+# Temporary files
+
+# =========================
+
+*.tmp
+*.temp
+*.log
+.cache/
+tmp/
+temp/
