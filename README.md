@@ -22,6 +22,14 @@ A fully offline, memory‑aware AI companion built in Python. Virgo holds natura
 
 ---
 
+### 🎬 Animated Avatar
+- **Reactive avatar** – plays an animation (smile, laugh, hug, thumbs‑up, embarrassed, etc.) based on the emotion of her reply.
+- **Action tags** – the model emits `[ACTION: name]` at the start of each reply; the backend strips it and triggers the matching animation.
+- **Seamless transitions** – after an action plays, the avatar returns to its idle loop.
+- **Base64‑embedded videos** – no path or file‑serving issues; all animations load inline.
+
+---
+
 ## 🏗️ Architecture
 
 ```text
