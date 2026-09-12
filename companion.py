@@ -25,7 +25,21 @@ from config import (
 from memory import ShortTermMemory, LongTermMemory
 from model import LlamaModel
 from utils import summarize_conversation
+import re
 
+ACTION_PATTERN = re.compile(r"\[ACTION:\s*(\w+)\]\s*", re.IGNORECASE)
+VALID_ACTIONS = {"idle","smile", "laugh", "hug", "thumbsup", "embarrassed", "neutral"}
+
+def extract_action(text: str):
+        """Return (clean_text, action). Defaults action to 'idle'."""
+        match = ACTION_PATTERN.search(text)
+        action = "idle"
+        if match:
+            candidate = match.group(1).lower()
+            if candidate in VALID_ACTIONS:
+                action = candidate
+            text = ACTION_PATTERN.sub("", text, count=1)
+        return text.strip(), action
 
 class ChatCompanion:
     """Main orchestrator – handles conversation, memory, and generation."""
@@ -39,6 +53,8 @@ class ChatCompanion:
         self.short_mem.add("system", self.system_prompt)
         self.exchange_count = 0
 
+
+    
     def chat(self, user_input):
         # 1. Retrieve relevant long‑term memories
         snippets = self.long_mem.retrieve(user_input, n_results=3)
@@ -47,14 +63,18 @@ class ChatCompanion:
         # 2. Build prompt
         prompt = self._build_prompt(user_input, snippets)
 
-        # 3. Generate reply
-        reply = self.model.generate(
-            prompt,
-            max_tokens=MAX_NEW_TOKENS,
-            temperature=TEMPERATURE,
-            top_p=TOP_P,
-            repeat_penalty=REPEAT_PENALTY,
+        raw_reply = self.model.generate(
+                prompt,
+                max_tokens=MAX_NEW_TOKENS,
+                temperature=TEMPERATURE,
+                top_p=TOP_P,
+                repeat_penalty=REPEAT_PENALTY,
         )
+
+        # 3. Generate reply
+        #reply = self.model.generate(  prompt,max_tokens=MAX_NEW_TOKENS,temperature=TEMPERATURE,top_p=TOP_P,repeat_penalty=REPEAT_PENALTY, )
+        # Extract action and clean text
+        reply, action = extract_action(raw_reply)    
 
         # 4. Store in short‑term
         self.short_mem.add("user", user_input)
@@ -69,7 +89,8 @@ class ChatCompanion:
                 self.long_mem.add_memory(summary)
                 print(f"[DEBUG] Stored summary in long-term memory: {summary}")
 
-        return reply
+        return reply, action
+
 
     def _build_prompt(self, user_input, snippets):
         prompt = f"<<SYS>>\n{self.system_prompt}\n<</SYS>>\n\n"
@@ -78,7 +99,7 @@ class ChatCompanion:
             for s in snippets:
                 prompt += f"- {s}\n"
             prompt += "\n"
-
+    
         # Add short‑term history (skip system prompt)
         for msg in self.short_mem.messages[1:]:
             if msg["role"] == "user":

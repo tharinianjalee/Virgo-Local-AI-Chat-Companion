@@ -19,13 +19,13 @@ from companion import ChatCompanion
 
 def run_cli():
     companion = ChatCompanion()
-    print("Nova: Hello! I'm your companion. Type 'exit' to quit.")
+    print("Virgo: Hello! I'm your companion. Type 'exit' to quit.")
     while True:
         user = input("You: ")
         if user.lower() == "exit":
             break
         reply = companion.chat(user)
-        print(f"Nova: {reply}")
+        print(f"Virgo: {reply}")
 
 
 def run_gradio():
@@ -36,7 +36,7 @@ def run_gradio():
     def respond(message, history):
         return companion.chat(message)
 
-    iface = gr.ChatInterface(fn=respond, title="Nova Companion")
+    iface = gr.ChatInterface(fn=respond, title="Virgo Companion")
     iface.launch()
 
 
