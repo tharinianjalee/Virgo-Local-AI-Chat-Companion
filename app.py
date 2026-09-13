@@ -24,7 +24,7 @@ def create_app(companion: ChatCompanion):
     ACTIONS = ["idle", "smile", "laugh", "hug", "thumbsup", "embarrassed", "neutral"]
     video_map = {}
     for action in ACTIONS:
-        path = os.path.join(ASSETS, f"Virgo_{action}.webm")
+        path = os.path.join(ASSETS, f"Virgo_{action}_new.webm")
         uri = file_to_base64(path, "video/webm")
         if uri:
             video_map[action] = uri
