@@ -47,6 +47,9 @@ htmlcov/
 !.env.example
 .venv
 
+.onnx
+.webm
+.mp4
 # =========================
 
 # Jupyter
