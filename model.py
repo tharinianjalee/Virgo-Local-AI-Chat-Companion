@@ -27,6 +27,21 @@ class LlamaModel:
         # You can set client if needed:
         # self.client = ollama.Client(host=OLLAMA_HOST)
 
+    def chat(self, messages, max_tokens, temperature, top_p, repeat_penalty):
+        """Send a list of {role, content} messages."""
+        response = ollama.chat(
+            model=self.model_name,
+            messages=messages,
+            options={
+                "num_predict": max_tokens,
+                "temperature": temperature,
+                "top_p": top_p,
+                "repeat_penalty": repeat_penalty,
+                "num_ctx": 4096,
+            },
+        )
+        return response["message"]["content"].strip()
+    
     def generate(self, prompt, max_tokens, temperature, top_p, repeat_penalty, echo=False):
         # Ollama's generate API
         response = ollama.generate(
@@ -38,7 +53,7 @@ class LlamaModel:
                 "top_p": top_p,
                 "repeat_penalty": repeat_penalty,
                 "num_ctx": 4096,
-                "stop": ["[/INST]", "</s>", "User:", "Assistant:"],   # stop on any new turn
+                #"stop": ["[/INST]", "</s>", "User:", "Assistant:"],   # stop on any new turn
             }
         )
         return response["response"].strip()
