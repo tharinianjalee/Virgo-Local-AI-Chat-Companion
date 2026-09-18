@@ -23,6 +23,7 @@ from config import (
     SUMMARY_TRIGGER_EXCHANGES,
     VOICE_ENABLED,
     STT_ENABLED,
+    DIRECTOR_ENABLED,
 )
 from memory import ShortTermMemory, LongTermMemory
 from model import LlamaModel
@@ -30,12 +31,27 @@ from utils import summarize_conversation
 import re
 
 from voice import Voice, Listener
+from director import Director
 
 
 #ACTION_PATTERN = re.compile(r"\[ACTION:\s*(\w+)\]\s*", re.IGNORECASE)
 ACTION_PATTERN = re.compile(r"\[?ACTION:\s*(\w+)\]?\s*", re.IGNORECASE)
 VALID_ACTIONS = {"idle","smile", "laugh", "hug", "thumbsup", "embarrassed", "neutral"}
 MAX_HISTORY_MESSAGES = 20   # keep the last 10 user + 10 assistant pairs
+# Matches [Internal thought: ...] or (Internal thought: ...) or "Internal thought: ..."
+THOUGHT_PATTERN = re.compile(
+    r"\[([^\]]+)\]",
+    re.IGNORECASE,
+)
+
+def extract_thought(text: str):
+    """Return (text_without_thoughts, thought_or_none)."""
+    matches = THOUGHT_PATTERN.findall(text)
+    thought = matches[0].strip() if matches else None
+    cleaned = THOUGHT_PATTERN.sub("", text).strip()
+    # Tidy up double spaces left behind
+    cleaned = re.sub(r"\s{2,}", " ", cleaned).strip()
+    return cleaned, thought
 
 def extract_action(text: str):
         """Return (clean_text, action). Defaults action to 'idle'."""
@@ -45,6 +61,7 @@ def extract_action(text: str):
             candidate = match.group(1).lower()
             if candidate in VALID_ACTIONS:
                 action = candidate
+                print("*********\nThe action: ",action,"\n*********")
             text = ACTION_PATTERN.sub("", text, count=1)
         return text.strip(), action
 
@@ -61,6 +78,7 @@ class ChatCompanion:
         self.exchange_count = 0
         self.voice = Voice() if VOICE_ENABLED else None
         self.listener = Listener() if STT_ENABLED else None
+        self.director = Director() if DIRECTOR_ENABLED else None
 
 
     def chat(self, user_input):
@@ -99,6 +117,9 @@ class ChatCompanion:
         )
         reply, action = extract_action(raw_reply)
 
+        # Split out any internal thought
+        reply_for_display, thought = extract_thought(reply)
+
         # 4. Repetition guard
         last_assistant = next(
             (m["content"] for m in reversed(self.short_mem.messages) if m["role"] == "assistant"),
@@ -117,7 +138,7 @@ class ChatCompanion:
 
         # 5. Store in short-term memory
         self.short_mem.add("user", user_input)
-        self.short_mem.add("assistant", reply)
+        self.short_mem.add("assistant", reply_for_display)
         self.exchange_count += 1
 
         # 6. Periodic summarisation
@@ -138,7 +159,16 @@ class ChatCompanion:
         # 7. Voice
         audio_path = None
         if self.voice and self.voice.is_ready():
-            audio_path = self.voice.synthesize_to_wav(reply)
+            if self.director:
+                try:
+                    segments = self.director.direct(reply_for_display)
+                    print(f"[DEBUG] Director segments: {segments}")
+                    audio_path = self.voice.synthesize_segments_to_wav(segments, action)
+                except Exception as e:
+                    print(f"[WARN] Director pipeline failed: {e}")
+                    audio_path = self.voice.synthesize_to_wav(reply_for_display)
+            else:
+                audio_path = self.voice.synthesize_to_wav(reply_for_display)
 
         return reply, action, audio_path
     ''' 

@@ -215,7 +215,7 @@ def create_app(companion: ChatCompanion):
     }
     """
     with gr.Blocks(title="Virgo – AI Companion") as demo:
-        gr.Markdown("# 🌟 Virgo")
+        gr.Markdown("#  Virgo")
 
         with gr.Row():
             with gr.Column(scale=3):
